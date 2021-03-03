@@ -1,3 +1,7 @@
+#custom
+src/cifar-10-batches-py/*
+src/cifar*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
