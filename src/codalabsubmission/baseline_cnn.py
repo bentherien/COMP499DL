@@ -12,27 +12,6 @@ import torchvision
 from sys import argv
 from torchvision import datasets, transforms
 
-class Net(torch.nn.Module):
-    def __init__(self):
-        super(Net, self).__init__()
-        self.layers = nn.ModuleList()
-        
-        self.layers+=[nn.Conv2d(3, 16,  kernel_size=3) , 
-                      nn.ReLU(inplace=True)]
-        self.layers+=[nn.Conv2d(16, 16,  kernel_size=3, stride=2), 
-                      nn.ReLU(inplace=True)]
-        self.layers+=[nn.Conv2d(16, 32,  kernel_size=3), 
-                      nn.ReLU(inplace=True)]
-        self.layers+=[nn.Conv2d(32, 32,  kernel_size=3, stride=2), 
-                      nn.ReLU(inplace=True)]
-        self.fc = nn.Linear(32*5*5, 10)
-
-    def forward(self, x):
-        for i in range(len(self.layers)):
-          x = self.layers[i](x)
-        x = x.view(-1, 32*5*5)
-        x = self.fc(x)
-        return x
 
 def train(model, device, train_loader, optimizer, epoch, display=True):
     model.train()
@@ -44,7 +23,7 @@ def train(model, device, train_loader, optimizer, epoch, display=True):
         loss.backward()
         optimizer.step()
     if display:
-      print('Train: Epoch {} [{}/{} ({:.0f}%)],\tLoss: {:.6f}'.format(
+        print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
           epoch, batch_idx * len(data), len(train_loader.dataset),
           100. * batch_idx / len(train_loader), loss.item()))
 
@@ -61,13 +40,15 @@ if __name__=="__main__":
 
 
     ##################### YOUR CODE GOES HERE
+    os.system("pip install scipy")
+    os.system("pip install --upgrade pillow")
+
+
     from torchvision import datasets, transforms
     from wide_resnet import WideResNet
     from auto_augment import AutoAugment, Cutout
     import os
-
-    os.system("pip install scipy")
-
+    import sys
 
     ### Preparation
     print("[Preparation] Start...")
@@ -97,7 +78,6 @@ if __name__=="__main__":
     # model: initialize model
     model = WideResNet(50, 20, num_classes=10)
     model.to(device)
-    model.to(device)
     optimizer = torch.optim.SGD(model.parameters(), 
                                 lr=0.1, momentum=0.9,
                                 weight_decay=0.0005)
@@ -108,9 +88,11 @@ if __name__=="__main__":
 
     ### Training
     # model: training loop
+    print(type(train_loader), file=sys.stderr)
+
     print("[Training] Start...\n")
     for epoch in range(140):
-        train(model, device, train_loader, optimizer, epoch, display=epoch%5==0)
+        train(model, device, train_loader, optimizer, epoch, display=True)
     print("\n[Training] Done")
 
 
