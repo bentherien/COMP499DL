@@ -95,10 +95,11 @@ class SmallSampleController:
             
 
             
+    def __str__(self):
+        return "[SmallSampleController] num classes:{}, batch size:{}".format(self.numClasses,batchSize)
 
 
-
-    def __init__(self, numClasses, trainSampleNum, valSampleNum, batchSize, multiplier, trainDataset, valDataset):
+    def __init__(self, numClasses, trainSampleNum, valSampleNum, batchSize, multiplier, trainDataset, valDataset, train=True):
         
         self.trainSampler = SmallSampleController.Sampler(
             numClasses=numClasses,sampleNum=trainSampleNum,
@@ -114,10 +115,10 @@ class SmallSampleController:
         self.valDataset = valDataset
         self.numClasses = numClasses
         self.batchSize = batchSize
+        self.train = train
 
         temp = [len(np.where(np.array(self.trainDataset.targets) == classe)[0]) for classe in range(0, self.numClasses)]
         self.maxIndex = min(temp)
-        print(temp)
 
 
 
@@ -128,7 +129,8 @@ class SmallSampleController:
         """Description: samples a new random permutaiton of class balanced 
         training and validation samples from the dataset"""
 
-        prng = RandomState(int(time.time()))
+        seed = int(time.time())
+        prng = RandomState(seed)
         RP = prng.permutation(np.arange(0, self.maxIndex))
 
         self.trainSampler.sample(
@@ -143,6 +145,8 @@ class SmallSampleController:
             dataset=self.valDataset,offset=self.trainSampler.samplesPerClass,
             RP=RP,workers=workers
             )
+
+        return seed
         
         
 
@@ -155,9 +159,19 @@ class SmallSampleController:
         return self.trainSampler.dataLoaders,self.valSampler.dataLoaders
 
     def generateNewSet(self,device,valMultiplier=None):
-        self.sample(valMultiplier)
+        seed = self.sample(valMultiplier)
         self.load(device)
-        return self.getDatasets()
+        trainDL,valDL = self.getDatasets()
+        if self.train == True:
+            print("Generated new permutation of the CIFAR train dataset with \
+                seed:{}, train sample num: {}, test sample num: {}".format(
+                    seed,self.trainSampler.sampleNum,self.valSampler.sampleNum))
+        else:
+            print("Generated new permutation of the CIFAR test dataset with \
+                seed:{}, train sample num: {}, test sample num: {}".format(
+                    seed,self.trainSampler.sampleNum,self.valSampler.sampleNum))
+
+        return trainDL,valDL,seed
 
 
 
