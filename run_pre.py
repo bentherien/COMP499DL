@@ -15,7 +15,7 @@ def run_exp(lr=0.1, gamma=0.2, step_size=30):
     shot = 10
     query = 15
     way = 10
-    gpu = 1
+    gpu = 0
     base_lr = 0.01
     
     the_command = 'python3 main.py' \

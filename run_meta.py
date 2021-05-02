@@ -14,7 +14,8 @@ def run_exp(num_batch=1000, shot=1, query=15, lr1=0.0001, lr2=0.001, base_lr=0.0
     max_epoch = 100
     way = 10
     step_size = 10
-    gpu = 1
+    gpu = 0
+    pre_max_epoch = 110
        
     the_command = 'python3 main.py' \
         + ' --max_epoch=' + str(max_epoch) \
@@ -28,7 +29,8 @@ def run_exp(num_batch=1000, shot=1, query=15, lr1=0.0001, lr2=0.001, base_lr=0.0
         + ' --gamma=' + str(gamma) \
         + ' --gpu=' + str(gpu) \
         + ' --base_lr=' + str(base_lr) \
-        + ' --update_step=' + str(update_step) 
+        + ' --pre_max_epoch=' + str(pre_max_epoch) \
+        + ' --update_step=' + str(update_step)
 
     os.system(the_command + ' --phase=meta_train')
     os.system(the_command + ' --phase=meta_eval')

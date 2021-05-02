@@ -278,8 +278,8 @@ class MetaTrainer(object):
         transform_train = transforms.Compose([transforms.ToTensor(), normalize])
 
         ##### Cifar Data
-        cifar_data = datasets.CIFAR10(root='.', train=True, transform=transform_train, download=True)
-        cifar_data_val = datasets.CIFAR10(root='.', train=True, transform=transform_val, download=True)
+        cifar_data = datasets.CIFAR10(root='.', train=False, transform=transform_train, download=True)
+        cifar_data_val = datasets.CIFAR10(root='.', train=False, transform=transform_val, download=True)
 
         indx_train = np.concatenate(
             [np.where(np.array(cifar_data.targets) == classe)[0][random_permute[0:10]] for classe in range(0, 10)])
