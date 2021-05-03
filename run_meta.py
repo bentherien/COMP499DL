@@ -32,7 +32,7 @@ def run_exp(num_batch=1000, shot=1, query=15, lr1=0.0001, lr2=0.001, base_lr=0.0
         + ' --pre_max_epoch=' + str(pre_max_epoch) \
         + ' --update_step=' + str(update_step)
 
-    os.system(the_command + ' --phase=meta_train')
+    # os.system(the_command + ' --phase=meta_train')
     os.system(the_command + ' --phase=meta_eval')
 
 run_exp(num_batch=100, shot=10, query=15, lr1=0.0001, lr2=0.001, base_lr=0.01, update_step=100, gamma=0.5)
