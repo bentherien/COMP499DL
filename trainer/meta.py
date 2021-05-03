@@ -270,69 +270,87 @@ class MetaTrainer(object):
         normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                          std=[0.229, 0.224, 0.225])
 
-        prng = RandomState(0)
+        
+        # We resize images to allow using imagenet pre-trained models, is there a better way?
+        resize = transforms.Resize(80)
 
-        random_permute = prng.permutation(np.arange(0, 5000))
+        transform_val = transforms.Compose([resize, transforms.ToTensor(), normalize]) #careful to keep this one same
+        transform_train = transforms.Compose([resize, transforms.ToTensor(), normalize])
 
-        transform_val = transforms.Compose([transforms.ToTensor(), normalize]) #careful to keep this one same
-        transform_train = transforms.Compose([transforms.ToTensor(), normalize])
+        
 
         ##### Cifar Data
         cifar_data = datasets.CIFAR10(root='.', train=False, transform=transform_train, download=True)
         cifar_data_val = datasets.CIFAR10(root='.', train=False, transform=transform_val, download=True)
 
-        indx_train = np.concatenate(
-            [np.where(np.array(cifar_data.targets) == classe)[0][random_permute[0:10]] for classe in range(0, 10)])
+        mean_acc = []
 
-        indx_val = np.concatenate(
-            [np.where(np.array(cifar_data.targets) == classe)[0][random_permute[10:210]] for classe in range(0, 10)])
+        for seed in range(3):
 
-        train_data = Subset(cifar_data, indx_train)
-        val_data = Subset(cifar_data_val, indx_val)
+            prng = RandomState(seed)
+            # random_permute = prng.permutation(np.arange(0, len(cifar_data_val)/10))
+            random_permute = prng.permutation(np.arange(0, 1000))
 
-        train_loader = torch.utils.data.DataLoader(train_data,
-                                                   batch_size=128,
-                                                   shuffle=True)
-
-        val_loader = torch.utils.data.DataLoader(val_data,
-                                                 batch_size=128,
-                                                 shuffle=False)
-
-        # Generate labels
-        # label = torch.arange(self.args.way).repeat(self.args.val_query)
-        # if torch.cuda.is_available():
-        #     label = label.type(torch.cuda.LongTensor)
-        # else:
-        #     label = label.type(torch.LongTensor)
-        # label_shot = torch.arange(self.args.way).repeat(self.args.shot)
-        # if torch.cuda.is_available():
-        #     label_shot = label_shot.type(torch.cuda.LongTensor)
-        # else:
-        #     label_shot = label_shot.type(torch.LongTensor)
-
-        dataloader_iterator = iter(train_loader)
-        support_data, support_target = next(dataloader_iterator)
-        support_data, support_target = support_data.to(device), support_target.to(device)
-
-        # Start meta-test
-        for i, batch in enumerate(val_loader, 1):
-            if torch.cuda.is_available():
-                data, label = [_.cuda() for _ in batch]
-            else:
-                data, label = batch
-
-            # k = self.args.way * self.args.shot
-            data_query = data
-            # data_shot, data_query = data[:k], data[k:]
-            logits = self.model((support_data, support_target, data_query))
-            acc = count_acc(logits, label)
-            ave_acc.add(acc)
-            test_acc_record[i-1] = acc
-            if i % 100 == 0:
-                print('batch {}: {:.2f}({:.2f})'.format(i, ave_acc.item() * 100, acc * 100))
             
-        # Calculate the confidence interval, update the logs
-        m, pm = compute_confidence_interval(test_acc_record)
-        print('Val Best Epoch {}, Acc {:.4f}, Test Acc {:.4f}'.format(trlog['max_acc_epoch'], trlog['max_acc'], ave_acc.item()))
-        print('Test Acc {:.4f} + {:.4f}'.format(m, pm))
+
+            indx_train = np.concatenate(
+                [np.where(np.array(cifar_data.targets) == classe)[0][random_permute[0:10]] for classe in range(0, 10)])
+
+            indx_val = np.concatenate(
+                [np.where(np.array(cifar_data.targets) == classe)[0][random_permute[10:210]] for classe in range(0, 10)])
+
+            train_data = Subset(cifar_data, indx_train)
+            val_data = Subset(cifar_data_val, indx_val)
+
+            train_loader = torch.utils.data.DataLoader(train_data,
+                                                    batch_size=128,
+                                                    shuffle=True)
+
+            val_loader = torch.utils.data.DataLoader(val_data,
+                                                    batch_size=128,
+                                                    shuffle=False)
+
+            # Generate labels
+            # label = torch.arange(self.args.way).repeat(self.args.val_query)
+            # if torch.cuda.is_available():
+            #     label = label.type(torch.cuda.LongTensor)
+            # else:
+            #     label = label.type(torch.LongTensor)
+            # label_shot = torch.arange(self.args.way).repeat(self.args.shot)
+            # if torch.cuda.is_available():
+            #     label_shot = label_shot.type(torch.cuda.LongTensor)
+            # else:
+            #     label_shot = label_shot.type(torch.LongTensor)
+
+            dataloader_iterator = iter(train_loader)
+            support_data, support_target = next(dataloader_iterator)
+            support_data, support_target = support_data.to(device), support_target.to(device)
+
+            # Start meta-test
+            for i, batch in enumerate(val_loader, 1):
+                if torch.cuda.is_available():
+                    data, label = [_.cuda() for _ in batch]
+                else:
+                    data, label = batch
+
+                # k = self.args.way * self.args.shot
+                data_query = data
+                # data_shot, data_query = data[:k], data[k:]
+                logits = self.model((support_data, support_target, data_query))
+                acc = count_acc(logits, label)
+                ave_acc.add(acc)
+                test_acc_record[i-1] = acc
+                if i % 100 == 0:
+                    print('batch {}: {:.2f}({:.2f})'.format(i, ave_acc.item() * 100, acc * 100))
+                
+            # Calculate the confidence interval, update the logs
+            m, pm = compute_confidence_interval(test_acc_record)
+            print('Val Best Epoch {}, Acc {:.4f}, Test Acc {:.4f}'.format(trlog['max_acc_epoch'], trlog['max_acc'], ave_acc.item()))
+            print('Test Acc {:.4f} + {:.4f}'.format(m, pm))
         
+            mean_acc.append(ave_acc.item())
+
+        mean_acc = np.array(mean_acc)
+
+        print(f"Mean accuracy for 3 seeds: {mean_acc.mean():.2f} +- {mean_acc.std():.2f}")
+            
