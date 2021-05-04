@@ -1,5 +1,6 @@
-# COMP499DL
-A repository for our COMP499 Deep Learning project
+# COMP499 Deep Learning Project
 
-[Overleaf](https://www.overleaf.com/7798452152cgqbpkvntssh)
-[Kanban](https://www.notion.so/Deep-Learning-e9aa9528116246ada72aba7d97653613)
+Topic: An Exploration of Current and Novel Deep Learning Approaches to Small
+Sample Learning for Computer Vision – With and Without External Data
+
+[Project Report](https://github.com/bentherien/COMP499DL/blob/main/COMP499_ProjectReport.pdf)
