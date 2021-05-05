@@ -55,6 +55,7 @@ class SmallSampleController:
             self.samplesPerClass = int(sampleNum/numClasses)
             self.multiplier = multiplier
             self.dataLoaders = None
+            self.indexes = None
 
 
         def sample(self,dataset,offset,workers,RP):
@@ -62,8 +63,14 @@ class SmallSampleController:
                 del self.dataLoaders
                 torch.cuda.empty_cache()
                 gc.collect()
-            
 
+
+            if self.indexes != None:
+                del self.indexes
+                torch.cuda.empty_cache()
+                gc.collect()
+            
+            self.indexes = []
             self.dataLoaders = []
             for x in range(self.multiplier):
                 end = int(offset + self.samplesPerClass)
@@ -71,6 +78,7 @@ class SmallSampleController:
                 indx = np.concatenate([np.where(np.array(dataset.targets) == class_)[0][RP[offset:end]] for class_ in range(0, self.numClasses)])
                 # print("len indx: {}".format(len(indx)))
                 subset = Subset(dataset, indx)
+                self.indexes.append(indx)
                 # print("len subset: {}, len Dataset: {}".format(len(subset),len(dataset)))
                 tempLoader = torch.utils.data.DataLoader(subset,
                                            batch_size=self.batchSize, shuffle=False,
@@ -125,11 +133,13 @@ class SmallSampleController:
 
 
 
-    def sample(self,workers=5,valMultiplier=None):
+    def sample(self,workers=5,valMultiplier=None,seed=None):
         """Description: samples a new random permutaiton of class balanced 
         training and validation samples from the dataset"""
 
-        seed = int(time.time())
+        if seed == None:
+            seed = int(time.time())
+
         prng = RandomState(seed)
         RP = prng.permutation(np.arange(0, self.maxIndex))
 
@@ -158,8 +168,8 @@ class SmallSampleController:
     def getDatasets(self):
         return self.trainSampler.dataLoaders,self.valSampler.dataLoaders
 
-    def generateNewSet(self,device,valMultiplier=None):
-        seed = self.sample(valMultiplier)
+    def generateNewSet(self,device,valMultiplier=None,seed=None):
+        seed = self.sample(workers=5,valMultiplier=valMultiplier,seed=seed)
         self.load(device)
         trainDL,valDL = self.getDatasets()
         if self.train == True:
