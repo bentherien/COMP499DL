@@ -1,0 +1,10 @@
+WideResNet28&25&19.2&Adam&0.001&10000&Nothing&301\\
+WideResNet28&50&21.94&Adam&0.001&10000&Nothing&301\\
+WideResNet28&75&24.87&Adam&0.001&10000&Nothing&301\\
+WideResNet28&100&24.76&Adam&0.001&10000&Nothing&301\\
+WideResNet28&125&25.24&Adam&0.001&10000&Nothing&301\\
+WideResNet28&150&25.24&Adam&0.001&10000&Nothing&301\\
+WideResNet28&175&25.21&Adam&0.001&10000&Nothing&301\\
+WideResNet28&200&25.21&Adam&0.001&10000&Nothing&301\\
+WideResNet28&225&25.31&Adam&0.001&10000&Nothing&301\\
+WideResNet28&250&25.24&Adam&0.001&10000&Nothing&301\\
