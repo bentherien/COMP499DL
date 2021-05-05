@@ -1,0 +1,2 @@
+command: python3 $program/baseline_cnn.py $input $output
+description: Example competition code submission.
